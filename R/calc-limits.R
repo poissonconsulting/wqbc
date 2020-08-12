@@ -284,7 +284,7 @@ calc_limits_by <- function(x, term, dates, limits, messages) {
 #' }
 #' @seealso \code{\link{clean_wqdata}} and \code{\link{lookup_limits}}
 #' @export
-calc_limits2 <- function(x, by = NULL, term = "long", dates = NULL, keep_limits = TRUE,
+calc_limits <- function(x, by = NULL, term = "long", dates = NULL, keep_limits = TRUE,
                          delete_outliers = FALSE, estimate_variables = FALSE,
                          clean = TRUE, limits = wqbc::limits,
                          messages = getOption("wqbc.messages", default = TRUE),
