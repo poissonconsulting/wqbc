@@ -60,15 +60,15 @@ calc_limits_by_period <- function(x) {
   cvalues <- get_code_values(x)
 
   x$Condition <- vapply(x$Condition,
-    FUN = test_condition,
-    FUN.VALUE = logical(1), cvalues = cvalues
+                        FUN = test_condition,
+                        FUN.VALUE = logical(1), cvalues = cvalues
   )
 
   x <- x[x$Condition, , drop = FALSE]
   x$Condition <- NULL
   x$UpperLimit <- vapply(x$UpperLimit,
-    FUN = calc_limit,
-    FUN.VALUE = numeric(1), cvalues = cvalues
+                         FUN = calc_limit,
+                         FUN.VALUE = numeric(1), cvalues = cvalues
   )
 
   x[!is.na(x$UpperLimit), , drop = FALSE]
@@ -189,7 +189,7 @@ calc_limits_by_30day <- function(x, dates, messages) {
   }
 
   if (!nrow(x)) {
-    return(NULL)
+    err("There are no values with limits available.")
   }
 
   x <- dplyr::arrange(x, .data$Date)
@@ -284,11 +284,11 @@ calc_limits_by <- function(x, term, dates, limits, messages) {
 #' }
 #' @seealso \code{\link{clean_wqdata}} and \code{\link{lookup_limits}}
 #' @export
-calc_limits <- function(x, by = NULL, term = "long", dates = NULL, keep_limits = TRUE,
-                        delete_outliers = FALSE, estimate_variables = FALSE,
-                        clean = TRUE, limits = wqbc::limits,
-                        messages = getOption("wqbc.messages", default = TRUE),
-                        use = "Freshwater Life") {
+calc_limits2 <- function(x, by = NULL, term = "long", dates = NULL, keep_limits = TRUE,
+                         delete_outliers = FALSE, estimate_variables = FALSE,
+                         clean = TRUE, limits = wqbc::limits,
+                         messages = getOption("wqbc.messages", default = TRUE),
+                         use = "Freshwater Life") {
   chk_data(x)
   chkor(chk_null(by), check_values(by, ""))
   chk_string(term)
@@ -335,7 +335,8 @@ calc_limits <- function(x, by = NULL, term = "long", dates = NULL, keep_limits =
 
   cleansed <- x
 
-  x_org <- dplyr::filter(x, .data$Variable %in% c("Chloride Total", "Hardness Total", "pH"))
+  org_vars <- c("Chloride Total", "Hardness Total", "pH", "Temperature", "Mercury- Methyl")
+  x_org <- dplyr::filter(x, .data$Variable %in% org_vars)
 
   if (estimate_variables) {
     x %<>% estimate_variable_values(by = by, messages = messages)
@@ -349,14 +350,14 @@ calc_limits <- function(x, by = NULL, term = "long", dates = NULL, keep_limits =
     x <- calc_limits_by(x, term = term, dates = dates, limits = limits, messages = messages)
   } else {
     x <- plyr::ddply(x,
-      .variables = by, .fun = calc_limits_by,
-      term = term, dates = dates, limits = limits, messages = messages
+                     .variables = by, .fun = calc_limits_by,
+                     term = term, dates = dates, limits = limits, messages = messages
     )
   }
 
   if (estimate_variables) { ## add original variable values back if still present
-    x_new <- dplyr::filter(x, .data$Variable %in% c("Chloride Total", "Hardness Total", "pH"))
-    x %<>% dplyr::filter(!.data$Variable %in% c("Chloride Total", "Hardness Total", "pH"))
+    x_new <- dplyr::filter(x, .data$Variable %in% org_vars)
+    x %<>% dplyr::filter(!.data$Variable %in% org_vars)
     x_org <- x_org[c("Date", "Variable", by, "Value")]
     x_new$Value <- NULL
     x_new %<>% dplyr::inner_join(x_org, by = c("Date", "Variable", by))
