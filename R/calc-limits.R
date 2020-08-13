@@ -65,6 +65,7 @@ calc_limits_by_period <- function(x) {
   )
 
   x <- x[x$Condition, , drop = FALSE]
+  err("All Conditions failed. Limits could not be calculated.")
   x$Condition <- NULL
   x$UpperLimit <- vapply(x$UpperLimit,
                          FUN = calc_limit,
@@ -200,9 +201,12 @@ calc_limits_by_30day <- function(x, dates, messages) {
   x <- plyr::ddply(x, "Date", calc_limits_by_period)
   x <- dplyr::filter(x, .data$Term == "Long")
   x <- dplyr::filter(x, !.data$Conditional)
-  x <- dplyr::filter(x, .data$Samples >= 5 & .data$Span >= 21)
-  stopifnot(!anyDuplicated(x$..ID))
-  x
+  x2 <- dplyr::filter(x, .data$Samples >= 5 & .data$Span >= 21)
+  if(!nrow(x2) & nrow(x) > 0){
+    err("There are insufficient data to calculate long-term limits. Try 'short' or 'long-daily' term.")
+  }
+  stopifnot(!anyDuplicated(x2$..ID))
+  x2
 }
 
 calc_limits_by <- function(x, term, dates, limits, messages) {
