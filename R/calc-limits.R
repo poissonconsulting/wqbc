@@ -65,7 +65,9 @@ calc_limits_by_period <- function(x) {
   )
 
   x <- x[x$Condition, , drop = FALSE]
-  err("All Conditions failed. Limits could not be calculated.")
+  if(!nrow(x)){
+    err("All conditions in the 'Conditions' column of the limits table failed for the selected variable. Limits could not be calculated.")
+  }
   x$Condition <- NULL
   x$UpperLimit <- vapply(x$UpperLimit,
                          FUN = calc_limit,
