@@ -1,1 +1,3 @@
-destination: docs
+url: https://poissonconsulting.github.io/wqbc/
+template:
+  package: poissontemplate
