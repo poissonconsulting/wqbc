@@ -59,3 +59,4 @@ RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
 RdMacros: lifecycle
+Config/Needs/website: poissonconsulting/poissontemplate
